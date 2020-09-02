@@ -1,5 +1,7 @@
 
 const Category = require('../Models/Category')
+const Product = require('../Models/Product')
+
 
 const getCategories = (req, res) => {
     Category.find().select('_id name')
@@ -15,8 +17,25 @@ const addCategory = (req, res) => {
 }
 
 const deleteCategory = (req, res) => {
+
+
+
+
+    //TODO: remove the deleted category from all products
+    // Category.findByIdAndDelete({ _id: req.body._id })
+    //     .then(result => { res.json(result) })
+    //     .catch(() => { res.status(400).json('cannot delete the category') })
+
     Category.findByIdAndDelete({ _id: req.body._id })
-        .then(result => { res.json(result) })
+        .then(result => {
+            Product.update(
+                {},
+                { $pull: { categories: req.body._id } },
+                { multi: true }
+            )
+                .then(() => res.json(result))
+                .catch(() => { res.status(400).json('cannot delete the category') })
+        })
         .catch(() => { res.status(400).json('cannot delete the category') })
 }
 
